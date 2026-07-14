@@ -54,67 +54,10 @@ jobs:
           name: windows-installer
           path: build/installer/*
 
-  linux-appimage:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build dependencies
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential cmake git libgnutls28-dev fuse
-
-      - name: Cache custom Qt
-        id: qtcache
-        uses: actions/cache@v4
-        with:
-          path: /opt/Qt
-          key: qt-linux-${{ hashFiles('qt/**') }}
-
-      - name: Build Qt (first run only, ~1-2h)
-        if: steps.qtcache.outputs.cache-hit != 'true'
-        run: sudo ./qt/build-qt.sh
-
-      - name: Build AppImage
-        run: ./create-appimage.sh
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-appimage
-          path: "*.AppImage"
-
-  macos:
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache custom Qt
-        id: qtcache
-        uses: actions/cache@v4
-        with:
-          path: /opt/Qt
-          key: qt-macos-${{ hashFiles('qt/**') }}
-
-      - name: Build Qt (first run only)
-        if: steps.qtcache.outputs.cache-hit != 'true'
-        run: ./qt/build-qt-macos.sh
-
-      - name: Configure
-        run: |
-          QTDIR=$(ls -d /opt/Qt/*/macos | head -1)
-          cmake -S src -B build -DCMAKE_BUILD_TYPE=MinSizeRel \
-            -DQt6_ROOT="$QTDIR" \
-            -DIMAGER_SIGNED_APP=OFF \
-            -DENABLE_TELEMETRY=OFF
-
-      - name: Build DMG
-        run: cmake --build build -j 3
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-dmg
-          path: "build/*.dmg"
+ 
 
   release:
-    needs: [windows, linux-appimage, macos]
+    needs: [windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
