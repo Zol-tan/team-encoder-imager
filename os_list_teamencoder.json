@@ -1,0 +1,89 @@
+{
+    "imager": {
+        "latest_version": "1.0.0",
+        "url": "https://team-encoder.com",
+        "devices": [
+            {
+                "name": "Backglass (Raspberry Pi Zero)",
+                "tags": [
+                    "te-backglass"
+                ],
+                "icon": "https://downloads.raspberrypi.com/imager/icons/RPi_Zero_2_W.png",
+                "description": "Team Encoder backglass display",
+                "matching_type": "exclusive",
+                "default": true
+            },
+            {
+                "name": "Cabinet (Orange Pi 5 Max)",
+                "tags": [
+                    "te-opi5"
+                ],
+                "icon": "https://raw.githubusercontent.com/YOURUSER/team-encoder-imager/main/assets/opi5max.png",
+                "description": "Team Encoder pinball cabinet \u2014 Android 14 / RK3588",
+                "matching_type": "exclusive"
+            },
+            {
+                "name": "Raspberry Pi (all models)",
+                "tags": [
+                    "pi5-64bit",
+                    "pi5-32bit",
+                    "pi4-64bit",
+                    "pi4-32bit",
+                    "pi3-64bit",
+                    "pi3-32bit",
+                    "pi2-32bit",
+                    "pi1-32bit"
+                ],
+                "icon": "https://downloads.raspberrypi.com/imager/devices/all.png",
+                "description": "Official Raspberry Pi operating systems",
+                "matching_type": "inclusive"
+            }
+        ]
+    },
+    "os_list": [
+        {
+            "name": "PinnerPi Backglass",
+            "description": "Backglass display for Pi Zero. Run gen_oslist.py once hosted.",
+            "url": "https://REPLACE.ME/pinnerpi-backglass.img.xz",
+            "icon": "https://raw.githubusercontent.com/YOURUSER/team-encoder-imager/main/assets/te_logo40.png",
+            "website": "https://team-encoder.com",
+            "release_date": "2026-07-14",
+            "extract_size": 0,
+            "extract_sha256": "REPLACE",
+            "image_download_size": 0,
+            "image_download_sha256": "REPLACE",
+            "devices": [
+                "te-backglass"
+            ],
+            "init_format": "systemd",
+            "architecture": "arm64",
+            "capabilities": [
+                "i2c",
+                "spi"
+            ]
+        },
+        {
+            "name": "PinnerOS Cabinet (Orange Pi 5 Max)",
+            "description": "Android 14 / RK3588 cabinet image. Downloaded and unpacked by the app.",
+            "url": "https://www.team-encoder.com/downloads/PinnerOS_RELEASE.7z",
+            "icon": "https://raw.githubusercontent.com/YOURUSER/team-encoder-imager/main/assets/te_logo40.png",
+            "website": "https://team-encoder.com",
+            "release_date": "2026-07-14",
+            "extract_size": 0,
+            "extract_sha256": "RUN gen_oslist.py TO FILL",
+            "image_download_size": 5879337319,
+            "image_download_sha256": "RUN gen_oslist.py TO FILL",
+            "devices": [
+                "te-opi5"
+            ],
+            "init_format": "none",
+            "architecture": "arm64"
+        },
+        {
+            "name": "Raspberry Pi OS (official list)",
+            "description": "All official Raspberry Pi operating systems",
+            "icon": "https://downloads.raspberrypi.com/imager/ic_raspberrypi.png",
+            "subitems_url": "https://downloads.raspberrypi.com/os_list_imagingutility_v4.json"
+        }
+    ]
+}

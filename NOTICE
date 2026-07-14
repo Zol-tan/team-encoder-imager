@@ -1,0 +1,22 @@
+Team Encoder Imager
+Copyright (C) 2026 Team Encoder
+
+This product is a derivative work of Raspberry Pi Imager
+(https://github.com/raspberrypi/rpi-imager)
+Copyright (C) 2020-2026 Raspberry Pi Ltd
+Licensed under the Apache License, Version 2.0 (see license.txt).
+
+Modifications by Team Encoder:
+  - Application, organisation and publisher branding
+  - Default OS repository repointed to Team Encoder's manifest
+  - Custom device definitions (Backglass / Cabinet)
+  - Anonymous telemetry disabled at compile time
+  - PP Doctor bundling and launch handoff
+
+Apache-2.0 permits this redistribution provided the licence and copyright
+notices are preserved. license.txt and the per-file SPDX headers are retained
+unmodified. Team Encoder Imager is not affiliated with or endorsed by
+Raspberry Pi Ltd.
+
+Bundled third-party component:
+  PP Doctor (Team Encoder) - cabinet media manager, Tauri/Rust.

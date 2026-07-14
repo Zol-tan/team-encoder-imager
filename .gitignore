@@ -59,3 +59,5 @@ test-cli-**
 # Python tooling
 .venv
 **/.venv
+# Bundled PP Doctor (fetched by CI)
+src/windows/extras/
