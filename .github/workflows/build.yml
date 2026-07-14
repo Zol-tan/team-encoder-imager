@@ -1,0 +1,130 @@
+# Place at .github/workflows/build.yml in your fork.
+# Builds Team Encoder Imager for Windows / Linux / macOS on every tag push (v*)
+# or manually via the Actions tab. Artifacts attach to a draft GitHub Release.
+#
+# NOTE: unsigned builds. Windows SmartScreen and macOS Gatekeeper will warn
+# users on first run (right-click > Open on Mac). Code signing certs can be
+# added later via IMAGER_SIGNED_APP=ON + secrets.
+
+name: build
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt 6.9 (MinGW) + toolchain
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.9.*"
+          arch: win64_mingw
+          tools: "tools_mingw1310"
+          cache: true
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Fetch PP Doctor utility for bundling
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force src/windows/extras | Out-Null
+          curl.exe -L -o src/windows/extras/pp-doctor.exe "https://drive.usercontent.google.com/download?id=1B14Xv9vK8_Mbv8kCevnkUmGjUFbLxBx0&export=download&confirm=t"
+
+      - name: Configure
+        shell: pwsh
+        run: >
+          cmake -S src -B build -G "MinGW Makefiles"
+          -DCMAKE_BUILD_TYPE=MinSizeRel
+          -DQt6_ROOT="$env:QT_ROOT_DIR"
+          -DMINGW64_ROOT="$env:IQTA_TOOLS\mingw1310_64"
+          -DENABLE_INNO_INSTALLER=ON
+          -DIMAGER_SIGNED_APP=OFF
+          -DENABLE_TELEMETRY=OFF
+
+      - name: Build installer
+        run: cmake --build build --target inno_installer -j 4
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: build/installer/*
+
+  linux-appimage:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential cmake git libgnutls28-dev fuse
+
+      - name: Cache custom Qt
+        id: qtcache
+        uses: actions/cache@v4
+        with:
+          path: /opt/Qt
+          key: qt-linux-${{ hashFiles('qt/**') }}
+
+      - name: Build Qt (first run only, ~1-2h)
+        if: steps.qtcache.outputs.cache-hit != 'true'
+        run: sudo ./qt/build-qt.sh
+
+      - name: Build AppImage
+        run: ./create-appimage.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-appimage
+          path: "*.AppImage"
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache custom Qt
+        id: qtcache
+        uses: actions/cache@v4
+        with:
+          path: /opt/Qt
+          key: qt-macos-${{ hashFiles('qt/**') }}
+
+      - name: Build Qt (first run only)
+        if: steps.qtcache.outputs.cache-hit != 'true'
+        run: ./qt/build-qt-macos.sh
+
+      - name: Configure
+        run: |
+          QTDIR=$(ls -d /opt/Qt/*/macos | head -1)
+          cmake -S src -B build -DCMAKE_BUILD_TYPE=MinSizeRel \
+            -DQt6_ROOT="$QTDIR" \
+            -DIMAGER_SIGNED_APP=OFF \
+            -DENABLE_TELEMETRY=OFF
+
+      - name: Build DMG
+        run: cmake --build build -j 3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: "build/*.dmg"
+
+  release:
+    needs: [windows, linux-appimage, macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: dist/*
